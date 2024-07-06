@@ -2,7 +2,6 @@ package ru.anpilogoff_dev.controller.auth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +19,6 @@ public class SessionFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         HttpSession session = request.getSession(false);
         String uri = request.getRequestURI();
-
 
         log.debug("SESSION FILTER:        ");
         log.debug("  + -- requestURI:  "+request.getRequestURI());
@@ -47,7 +45,6 @@ public class SessionFilter implements Filter {
                 log.debug(" -- session: "+session.getId()+ "   -- ...invalidated");
 
                 response.sendRedirect("/auth");
-
                 log.debug("   -- redirected from session filter on /auth \n");
 
                 return;
@@ -56,11 +53,12 @@ public class SessionFilter implements Filter {
                 response.sendRedirect("/home");
                 return;
             }
-        }else if (uri.contains("home") && session != null){
+        }else if (session != null && uri.contains("home")){
             session.invalidate();
             response.sendRedirect("/auth");
             return;
         }
+
         filterChain.doFilter(request, response);
     }
 

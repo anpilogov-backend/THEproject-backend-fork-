@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,7 +55,7 @@ class SessionFilterTest {
                       String uri,
                       boolean invalidateExpected,
                       String redirectURI) throws ServletException, IOException {
-
+lenient().when(request.getMethod()).thenReturn("POST");
         when(request.getRequestURI()).thenReturn(uri);
         when(request.getSession(false)).thenReturn(sessionExists ? session : null);
         lenient().when(session.getAttribute("user")).thenReturn(userExist ? mock(UserModel.class) : null);
@@ -89,7 +90,11 @@ class SessionFilterTest {
         filter.doFilter(request, response, chain);
 
         assertEquals(0, jsessionIdCookie.getMaxAge());
+        verify(session,times(1)).invalidate();
         verify(response).sendRedirect("/auth");
     }
+
+
+
 
 }
