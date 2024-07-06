@@ -56,7 +56,8 @@ public class SessionFilter implements Filter {
                 response.sendRedirect("/home");
                 return;
             }
-        }else if (uri.contains("home")){
+        }else if (uri.contains("home") && session != null){
+            session.invalidate();
             response.sendRedirect("/auth");
             return;
         }

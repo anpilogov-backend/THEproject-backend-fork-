@@ -43,7 +43,7 @@ class SessionFilterTest {
                 Arguments.of(true, true, "/auth", true, "/auth"),
                 Arguments.of(true, true, "/signup", false, "/home"),
                 Arguments.of(false, false, "/auth", false, null),
-                Arguments.of(false, false, "/home", false, "/auth")
+                Arguments.of(true, false, "/home", true, "/auth")
         );
     }
 
@@ -59,6 +59,7 @@ class SessionFilterTest {
         when(request.getSession(false)).thenReturn(sessionExists ? session : null);
         lenient().when(session.getAttribute("user")).thenReturn(userExist ? mock(UserModel.class) : null);
         Cookie jsessionIdCookie = new Cookie("JSESSIONID", "value");
+        jsessionIdCookie.setMaxAge(0);
         lenient().when(request.getCookies()).thenReturn(new Cookie[]{jsessionIdCookie});
 
         filter.doFilter(request, response, chain);
