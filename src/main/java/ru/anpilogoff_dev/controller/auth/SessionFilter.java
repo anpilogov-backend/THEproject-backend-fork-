@@ -57,6 +57,8 @@ public class SessionFilter implements Filter {
             session.invalidate();
             response.sendRedirect("/auth");
             return;
+        }else if(session == null && (!uri.contains("auth")|| !uri.contains("signup"))){
+            response.sendRedirect("/auth");
         }
 
         filterChain.doFilter(request, response);

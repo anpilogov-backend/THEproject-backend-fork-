@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.anpilogoff_dev.database.model.UserModel;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -17,8 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,7 +45,8 @@ class SessionFilterTest {
                 Arguments.of(true, true, "/auth", true, "/auth"),
                 Arguments.of(true, true, "/signup", false, "/home"),
                 Arguments.of(false, false, "/auth", false, null),
-                Arguments.of(true, false, "/home", true, "/auth")
+                Arguments.of(true, false, "/home", true, "/auth"),
+                Arguments.of(false,false,"/home",false,"/auth")
         );
     }
 
@@ -55,7 +57,7 @@ class SessionFilterTest {
                       String uri,
                       boolean invalidateExpected,
                       String redirectURI) throws ServletException, IOException {
-lenient().when(request.getMethod()).thenReturn("POST");
+        lenient().when(request.getMethod()).thenReturn("POST");
         when(request.getRequestURI()).thenReturn(uri);
         when(request.getSession(false)).thenReturn(sessionExists ? session : null);
         lenient().when(session.getAttribute("user")).thenReturn(userExist ? mock(UserModel.class) : null);
@@ -66,7 +68,7 @@ lenient().when(request.getMethod()).thenReturn("POST");
         filter.doFilter(request, response, chain);
 
         if (invalidateExpected) {
-            assertEquals(jsessionIdCookie.getMaxAge(), 0);
+            assertEquals(0, jsessionIdCookie.getMaxAge());
             verify(session).invalidate();
         } else {
             verify(session, never()).invalidate();
