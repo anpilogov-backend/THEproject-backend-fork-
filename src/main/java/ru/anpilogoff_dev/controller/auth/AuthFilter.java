@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import ru.anpilogoff_dev.database.model.UserModel;
 import ru.anpilogoff_dev.utils.ValidationUtil;
-
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,8 +18,7 @@ public class AuthFilter implements Filter {
     private Validator validator;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        //  Filter.super.init(filterConfig);
+    public void init(FilterConfig filterConfig) {
         ServletContext context = filterConfig.getServletContext();
         ValidatorFactory validatorFactory = (ValidatorFactory) context.getAttribute("factory");
         this.validator = validatorFactory.getValidator();
@@ -35,10 +33,9 @@ public class AuthFilter implements Filter {
         String method = request.getMethod();
         String uri = request.getRequestURI();
 
-        log.debug("   -- session exists?: " + request.getSession(false));
 
         if (uri.contains("auth")) {
-            if (method.equals("POST")) {
+            if (method.equalsIgnoreCase("POST")) {
                 log.debug("   -- /auth:\"POST\" \n");
 
                 String login = request.getParameter("login");
@@ -46,7 +43,7 @@ public class AuthFilter implements Filter {
                 JSONObject validationErrors = null;
 
                 if (login != null && password != null) {
-                    log.debug("   -- login & pwd not null");
+                    log.debug("   -- login and password not null");
 
                     validationErrors = ValidationUtil.validateParams(new UserModel(login, password), validator);
                 }

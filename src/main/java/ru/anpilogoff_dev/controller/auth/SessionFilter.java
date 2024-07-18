@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class SessionFilter implements Filter {
 
@@ -25,7 +26,7 @@ public class SessionFilter implements Filter {
 
         if (session != null && session.getAttribute("user") != null) {
 
-            log.debug("   --- session != null && session.getAttrubute(\"user\") != null:   "+session.getAttribute("user"));
+            log.debug("   -- SESSION  and session.USER attribute not null: ( "+session.getAttribute("user")+" )");
 
             if (uri.contains("auth")) {
                 log.debug("   -- uri contain AUTH");
@@ -34,15 +35,13 @@ public class SessionFilter implements Filter {
                 if(jsessionCookie != null){
                     jsessionCookie.setMaxAge(0);
 
-                    log.debug("   -- :   "+jsessionCookie.getName()+":"+jsessionCookie.getValue());
-
                     response.addCookie(jsessionCookie);
 
-                    log.debug("   -- cookie-max age setted to 0: "+jsessionCookie.getName()+":"+jsessionCookie.getValue()+" - added to response \n");
+                    log.debug("   -- cookie-max age set to 0: "+jsessionCookie.getName()+" : "+jsessionCookie.getValue()+" - added to response \n");
                     }
-                session.invalidate();
-
-                log.debug(" -- session: "+session.getId()+ "   -- ...invalidated");
+                log.debug(" -- session: "+session.getId());
+                        session.invalidate();
+                log.debug("   -- ...invalidated");
 
                 response.sendRedirect("/auth");
                 log.debug("   -- redirected from session filter on /auth \n");
@@ -57,7 +56,8 @@ public class SessionFilter implements Filter {
             session.invalidate();
             response.sendRedirect("/auth");
             return;
-        }else if(session == null && (!uri.contains("auth")|| !uri.contains("signup"))){
+        }else if(session == null && !uri.contains("auth") && !uri.contains("signup")){
+            log.debug("   -- session is null..uri don't contains #auth# or #signup#");
             response.sendRedirect("/auth");
         }
 
@@ -65,7 +65,7 @@ public class SessionFilter implements Filter {
     }
 
     public Cookie getJsessionIdCookie(Cookie [] cookies){
-        log.debug("SessionFilter.getJsessionIdCookie()");
+        log.debug("SessionFilter.getJsessionIdCookie():  ");
         Cookie jSessionIdCookie = null;
 
         if (cookies != null && cookies.length != 0) {
@@ -74,14 +74,15 @@ public class SessionFilter implements Filter {
 
             for (Cookie cookie : cookies) {
                 if (cookie != null && cookie.getName().equals("JSESSIONID")) {
-                    log.debug( cookie.getName() +"   -- cookies[0].getName()");
+                    log.debug( cookie.getName() +"   -- JSESSIONID cookie");
                     jSessionIdCookie = cookie;
 
+                    log.debug("   -- break");
                     break;
                 }
             }
         }
-        log.debug("returned "+jSessionIdCookie);
+        log.debug("  --return:  "+jSessionIdCookie);
 
         return jSessionIdCookie;
     }
