@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -41,8 +42,9 @@ class CSRFFilterTest {
     @Test
     public void testDoFilter_ValidCSRFToken() throws IOException, ServletException {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getParameter("csrfToken")).thenReturn("valid-token");
-        when(session.getAttribute("csrfToken")).thenReturn("valid-token");
+        when(request.getHeader("XSRF-TOKEN")).thenReturn("valid-token");
+        Cookie csrfCookie = new Cookie("X-CSRF-TOKEN", "valid-token");
+        when(request.getCookies()).thenReturn(new Cookie[]{csrfCookie});
 
         csrfFilter.doFilter(request, response, filterChain);
 
@@ -54,8 +56,9 @@ class CSRFFilterTest {
     @Test
     public void testDoFilter_InvalidCSRFToken() throws IOException, ServletException {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getParameter("csrfToken")).thenReturn("invalid-token");
-        when(session.getAttribute("csrfToken")).thenReturn("valid-token");
+        when(request.getHeader("XSRF-TOKEN")).thenReturn("invalid-token");
+        Cookie csrfCookie = new Cookie("X-CSRF-TOKEN", "valid-token");
+        when(request.getCookies()).thenReturn(new Cookie[]{csrfCookie});
 
         csrfFilter.doFilter(request, response, filterChain);
 
@@ -65,9 +68,24 @@ class CSRFFilterTest {
     }
 
     @Test
-    public void testDoFilter_NoCSRFToken() throws IOException, ServletException {
+    public void testDoFilter_NoCSRFTokenInHeader() throws IOException, ServletException {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getParameter("csrfToken")).thenReturn(null);
+        when(request.getHeader("XSRF-TOKEN")).thenReturn(null);
+        Cookie csrfCookie = new Cookie("X-CSRF-TOKEN", "valid-token");
+        when(request.getCookies()).thenReturn(new Cookie[]{csrfCookie});
+
+        csrfFilter.doFilter(request, response, filterChain);
+
+        verify(session).invalidate();
+        verify(response).sendRedirect("/auth");
+        verify(filterChain, never()).doFilter(request, response);
+    }
+
+    @Test
+    public void testDoFilter_NoCSRFCookie() throws IOException, ServletException {
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getHeader("XSRF-TOKEN")).thenReturn("valid-token");
+        when(request.getCookies()).thenReturn(null);
 
         csrfFilter.doFilter(request, response, filterChain);
 

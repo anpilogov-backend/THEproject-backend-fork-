@@ -25,16 +25,21 @@ public class AuthServlet extends HttpServlet {
             session = request.getSession(true);
             csrfToken = generateCSRFToken();
 
-            session.setAttribute("csrfToken",csrfToken);
-            request.setAttribute("csrfToken", csrfToken); // Убедитесь, что атрибут устанавливается здесь
 
             log.debug("CSRF token set as request attribute: " + csrfToken);
 
-            String header = response.getHeader("Set-Cookie").replace("THEproject", "");
+            String header = response.getHeader("Set-Cookie").replace("THEproject", "")+"; SameSite=Strict";
             response.setHeader("Set-Cookie", header);
 
-        }else {
-            request.setAttribute("csrfToken",session.getAttribute("csrfToken"));
+            //      Cookie cookie = new Cookie("XSRF-TOKEN",csrfToken);
+           // cookie.setSecure(true);
+          //  cookie.setHttpOnly(false);
+          //  cookie.setPath("/");
+          //  response.addCookie(cookie);
+            response.addHeader("Set-Cookie","XSRF-TOKEN="+csrfToken+"; Path=/; Secure; SameSite=Strict");
+
+
+
         }
 
         request.getServletContext().getRequestDispatcher("/login.jsp").forward(request, response);

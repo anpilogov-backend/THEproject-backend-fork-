@@ -2,6 +2,8 @@ package ru.anpilogoff_dev.controller.auth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.anpilogoff_dev.utils.CookieUtil;
+
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +32,7 @@ public class SessionFilter implements Filter {
 
             if (uri.contains("auth")) {
                 log.debug("   -- uri contain AUTH");
-                Cookie jsessionCookie = getJsessionIdCookie(request.getCookies());
+                Cookie jsessionCookie = CookieUtil.getCookieByName(request.getCookies(),"JSESSIONID");
 
                 if(jsessionCookie != null){
                     jsessionCookie.setMaxAge(0);
@@ -59,31 +61,8 @@ public class SessionFilter implements Filter {
         }else if(session == null && !uri.contains("auth") && !uri.contains("signup")){
             log.debug("   -- session is null..uri don't contains #auth# or #signup#");
             response.sendRedirect("/auth");
+            return;
         }
-
         filterChain.doFilter(request, response);
-    }
-
-    public Cookie getJsessionIdCookie(Cookie [] cookies){
-        log.debug("SessionFilter.getJsessionIdCookie():  ");
-        Cookie jSessionIdCookie = null;
-
-        if (cookies != null && cookies.length != 0) {
-
-            log.debug("   -- cookies != null");
-
-            for (Cookie cookie : cookies) {
-                if (cookie != null && cookie.getName().equals("JSESSIONID")) {
-                    log.debug( cookie.getName() +"   -- JSESSIONID cookie");
-                    jSessionIdCookie = cookie;
-
-                    log.debug("   -- break");
-                    break;
-                }
-            }
-        }
-        log.debug("  --return:  "+jSessionIdCookie);
-
-        return jSessionIdCookie;
     }
 }

@@ -2,7 +2,10 @@ package ru.anpilogoff_dev.controller.auth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.anpilogoff_dev.utils.CookieUtil;
+
 import javax.servlet.*;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -24,10 +27,10 @@ public class CSRFFilter implements Filter {
         HttpSession session = request.getSession(false);
 
         if (request.getMethod().equalsIgnoreCase("POST") && session != null) {
-            String csrfToken = request.getParameter("csrfToken");
-            String sessionToken = (String) session.getAttribute("csrfToken");
+            Cookie cookieCSRF = CookieUtil.getCookieByName(request.getCookies(),"X-CSRF-TOKEN");
+            String headerCsrf = request.getHeader("XSRF-TOKEN");
 
-            if (csrfToken == null || !csrfToken.equals(sessionToken)) {
+            if (headerCsrf == null || cookieCSRF == null ||!headerCsrf.equals(cookieCSRF.getValue())   ) {
                 session.invalidate();
                 log.debug( "    -- CSRF токен не совпадает или отсутствует. Session Invalidated");
                 response.sendRedirect("/auth");
